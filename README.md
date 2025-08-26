@@ -13,44 +13,43 @@ For projects where I want logs formatted like this:
 2023-03-26 11:43:14,475 INFO in user_routes.py:24 [users]: Super Admin 1 (671) viewed the users list page
 ```
 
-With `logging_helpers.py` I simplify the process so I can add log statements like this: 
+With this I simplify the process so I can add log statements like this: 
 ```
 log_info("Attempting login for username '%s'", username)
 log_warning("Failed login attempt for %s", username)
 log_error("Some error happened...")
 ```
 
-## Structure (in root)
+## Package layout
 ```
-my_logging/
-  __init__.py
-  config.py
-  filters.py
-  formatters.py
-  init_logging.py
-utils/
-  logging_helpers.py   # provides log_info/log_warning/log_error/log_critical
+src/
+  my_logging/
+    __init__.py             # exports init_logging + log_* helpers
+    config.py
+    filters.py
+    formatters.py
+    init_logging.py
+    helpers/__init__.py     # log_debug/log_info/log_warning/log_error/log_critical
 ```
 
 ## Quick start (plain Python)
 ```python
-from my_logging import init_logging
-from utils.logging_helpers import log_info, log_error
+from my_logging import init_logging, log_info, log_warning, log_error, log_critical
 
-logger = init_logging()   # creates logs/app.log
+init_logging()  # creates logs/app.log (5MB rotate, 20 backups)
 log_info("service started")
+log_warning("using defaults")
 log_error("example problem")
 ```
 
 ## Quick start (Flask)
 ```python
 from flask import Flask
-from my_logging import init_logging
-from utils.logging_helpers import log_info
+from my_logging import init_logging, log_info
 
 def create_app():
     app = Flask(__name__)
-    init_logging(app=app)
+    init_logging(app=app)   # attaches handlers to app.logger, silences noisy libs
     @app.route("/")
     def ping():
         log_info("ping")
@@ -74,6 +73,9 @@ LOG_JSON_FILE=0   # 1 enables JSON lines for file handler
 
 ## Notes
 - Handlers are reset on init to avoid duplicates.
-- `utils.logging_helpers` picks Flask `current_app.logger` when available, else falls back to root logger, so the same `log_info(...)` calls work in both contexts.
-- ANSI stripping is in the formatter to prevent stray codes from reaching files.
-- `silence_noisy_libs()` reduces chatter from Werkzeug, SQLAlchemy engine, Socket.IO, and Engine.IO. Adjust as needed.
+- `log_*` helpers prefer `Flask.current_app.logger` when available, else fall back to the root logger.
+- ANSI codes are stripped in formatters to keep files clean.
+- `werkzeug`, `sqlalchemy.engine`, `socketio`, and `engineio` are set to WARNING by default. Use `silence_noisy_libs()` to adjust.
+
+## License
+MIT
