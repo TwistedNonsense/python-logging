@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-logging-kit"
+version = "0.1.0"
+description = "Drop-in logging for Python/Flask: console + rotating file, optional JSON."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Greg Gambone" }]
+classifiers = ["Programming Language :: Python :: 3"]
+
+[project.urls]
+Homepage = "https://github.com/TwistedNonsense/python-logging"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
